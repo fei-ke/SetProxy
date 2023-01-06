@@ -70,6 +70,14 @@ fun HomeScreen() {
                     }
                 }
             }
+
+            val requestPermission by viewModel.requestPermission.collectAsState(false)
+
+            if (requestPermission) {
+                RequestPermissionDialog {
+                    viewModel.cancelRequestPermission()
+                }
+            }
         }
     }
 }
@@ -139,7 +147,7 @@ fun StatusCard(proxy: Proxy) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(vertical = 16.dp, horizontal = 8.dp)
             .height(100.dp),
         colors = colors,
         onClick = { }
@@ -198,5 +206,24 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
                 Text(text = "Cancel")
             }
         },
+    )
+}
+
+@Composable
+fun RequestPermissionDialog(onDismissRequest: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { },
+        title = { Text("Permission required") },
+        text = {
+            Text(
+                "Please grant the permission to set proxy use command: \n"
+                        + "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS"
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("OK")
+            }
+        }
     )
 }
