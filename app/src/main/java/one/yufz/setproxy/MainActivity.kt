@@ -9,7 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
-import one.yufz.setproxy.ui.HomeScreen
+import one.yufz.setproxy.ui.home.HomeScreen
 import one.yufz.setproxy.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {

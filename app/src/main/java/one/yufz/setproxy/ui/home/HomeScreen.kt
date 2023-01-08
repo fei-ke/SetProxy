@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
-package one.yufz.setproxy.ui
+package one.yufz.setproxy.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -46,8 +47,9 @@ fun HomeScreen() {
                 .fillMaxSize(),
         ) {
             val viewModel: ProxyViewModel = viewModel()
-            val current by viewModel.currentProxy.collectAsState(Proxy.EMPTY_PROXY)
-            val proxyList by viewModel.proxyList.collectAsState(emptyList())
+            val uiState by viewModel.uiState.collectAsState()
+            val current = uiState.currentProxy
+            val proxyList = uiState.proxyList
 
             Column {
                 StatusCard(current)
@@ -71,9 +73,7 @@ fun HomeScreen() {
                 }
             }
 
-            val requestPermission by viewModel.requestPermission.collectAsState(false)
-
-            if (requestPermission) {
+            if (uiState.requestingPermission) {
                 RequestPermissionDialog {
                     viewModel.cancelRequestPermission()
                 }
@@ -215,10 +215,12 @@ fun RequestPermissionDialog(onDismissRequest: () -> Unit) {
         onDismissRequest = { },
         title = { Text("Permission required") },
         text = {
-            Text(
-                "Please grant the permission to set proxy use command: \n"
-                        + "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS"
-            )
+            SelectionContainer() {
+                Text(
+                    "Please grant the permission to set proxy use command: \n"
+                            + "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS"
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
