@@ -1,13 +1,14 @@
 package one.yufz.setproxy
 
 import android.content.Context
+import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class ProxyStore(private val context: Context) {
     companion object {
         private fun Proxy.toPrefsString(): String {
-            return "$host\n$port\n&userName\n$password"
+            return "$host\n$port\n&$userName\n$password"
         }
 
         private fun String.toProxy(): Proxy {
@@ -33,11 +34,17 @@ class ProxyStore(private val context: Context) {
     }
 
     private fun getProxyList(): List<Proxy> {
-        return prefs.getStringSet("proxy_list", emptySet())?.map { it.toProxy() } ?: emptyList()
+        return prefs.all.toSortedMap().values.map { it.toString().toProxy() }
     }
 
     private fun storeProxyList() {
-        prefs.edit().putStringSet("proxy_list", proxyList.map { it.toPrefsString() }.toSet()).apply()
+        prefs.edit {
+            clear()
+            proxyList.forEachIndexed { index, proxy ->
+                putString(index.toString(), proxy.toPrefsString())
+            }
+        }
+
         proxyListFlow.value = proxyList
     }
 
