@@ -1,6 +1,8 @@
 package one.yufz.setproxy
 
+import android.app.Activity
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,11 +25,24 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        tryRequestNotificationPermission(this)
     }
 
     private fun makeActivityFullScreen() {
         window.statusBarColor = Color.TRANSPARENT
         WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+
+    private fun tryRequestNotificationPermission(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity.requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 0)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        BackgroundService.wakeService(this)
     }
 }
 

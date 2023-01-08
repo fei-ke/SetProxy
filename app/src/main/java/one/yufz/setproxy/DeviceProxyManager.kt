@@ -34,6 +34,8 @@ object DeviceProxyManager {
 
     fun setProxy(context: Context, proxy: Proxy) {
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, "${proxy.host}:${proxy.port}")
+
+        BackgroundService.wakeService(context)
     }
 
     fun removeProxy(context: Context) {
@@ -47,7 +49,6 @@ object DeviceProxyManager {
     private fun unregisterContentObserver(context: Context, observer: ObserverWrap) {
         context.contentResolver.unregisterContentObserver(observer)
     }
-
 
     private class ObserverWrap(val observer: () -> Unit) : ContentObserver(null) {
         override fun onChange(selfChange: Boolean) {
