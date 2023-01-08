@@ -1,19 +1,16 @@
 package one.yufz.setproxy
 
 import android.content.Context
+import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import one.yufz.setproxy.Proxy.Companion.toJson
+import org.json.JSONArray
 
 class ProxyStore(private val context: Context) {
     companion object {
-        private fun Proxy.toPrefsString(): String {
-            return "$host\n$port\n&userName\n$password"
-        }
-
-        private fun String.toProxy(): Proxy {
-            val (host, port, userName, password) = split("\n")
-            return Proxy(host, port.toInt(), userName, password)
-        }
+        private const val KEY_PROXY_LIST = "proxy_list"
+        private const val KEY_CURRENT_PROXY = "current_proxy"
     }
 
     private val prefs = context.getSharedPreferences("proxy", Context.MODE_PRIVATE)
@@ -33,11 +30,25 @@ class ProxyStore(private val context: Context) {
     }
 
     private fun getProxyList(): List<Proxy> {
-        return prefs.getStringSet("proxy_list", emptySet())?.map { it.toProxy() } ?: emptyList()
+        val jsonString = prefs.getString(KEY_PROXY_LIST, "[]")
+        val array = JSONArray(jsonString)
+        val list = ArrayList<Proxy>(array.length())
+        for (i in 0 until array.length()) {
+            list.add(Proxy.fromJson(array.getJSONObject(i)))
+        }
+        return list
     }
 
     private fun storeProxyList() {
-        prefs.edit().putStringSet("proxy_list", proxyList.map { it.toPrefsString() }.toSet()).apply()
+        val jsonArray = JSONArray()
+
+        proxyList.forEachIndexed { index, proxy ->
+            jsonArray.put(index, proxy.toJson())
+        }
+        prefs.edit {
+            putString(KEY_PROXY_LIST, jsonArray.toString())
+        }
+
         proxyListFlow.value = proxyList
     }
 

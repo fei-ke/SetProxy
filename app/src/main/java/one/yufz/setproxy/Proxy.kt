@@ -1,5 +1,7 @@
 package one.yufz.setproxy
 
+import org.json.JSONObject
+
 data class Proxy(
     val host: String,
     val port: Int,
@@ -9,6 +11,32 @@ data class Proxy(
 
     companion object {
         val EMPTY_PROXY = Proxy("", 0)
+
+        fun Proxy.toJson(): JSONObject {
+            return JSONObject().apply {
+                put("host", host)
+                put("port", port)
+                put("userName", userName)
+                put("password", password)
+            }
+        }
+
+        fun fromJson(json: String): Proxy {
+            return fromJson(JSONObject(json))
+        }
+
+        fun fromJson(json: JSONObject): Proxy {
+            return try {
+                Proxy(
+                    host = json.getString("host"),
+                    port = json.getInt("port"),
+                    userName = json.optString("userName"),
+                    password = json.optString("password")
+                )
+            } catch (e: Exception) {
+                EMPTY_PROXY
+            }
+        }
     }
 
     fun isEmpty(): Boolean {
