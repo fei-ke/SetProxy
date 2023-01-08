@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import one.yufz.setproxy.Proxy.Companion.EMPTY_PROXY
 import one.yufz.setproxy.Proxy.Companion.toJson
 import org.json.JSONArray
 
@@ -18,6 +19,8 @@ class ProxyStore(private val context: Context) {
     private var proxyList: List<Proxy> = getProxyList()
 
     private val proxyListFlow = MutableStateFlow(proxyList)
+
+    private val currentProxy = MutableStateFlow(getCurrentProxy())
 
     fun addProxy(proxy: Proxy) {
         proxyList = proxyList + proxy
@@ -54,5 +57,28 @@ class ProxyStore(private val context: Context) {
 
     fun listFlow(): StateFlow<List<Proxy>> {
         return proxyListFlow
+    }
+
+    fun setCurrentProxy(proxy: Proxy) {
+        prefs.edit {
+            putString(KEY_CURRENT_PROXY, proxy.toJson().toString())
+        }
+        if (!proxyList.contains(proxy)) {
+            addProxy(proxy)
+        }
+        currentProxy.value = proxy
+    }
+
+    fun getCurrentProxy(): Proxy {
+        val jsonString = prefs.getString(KEY_CURRENT_PROXY, null)
+        return if (jsonString != null) {
+            Proxy.fromJson(jsonString)
+        } else {
+            Proxy.EMPTY_PROXY
+        }
+    }
+
+    fun currentProxyFlow(): StateFlow<Proxy> {
+        return currentProxy
     }
 }

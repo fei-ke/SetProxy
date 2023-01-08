@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
-package one.yufz.setproxy.ui
+package one.yufz.setproxy.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -46,21 +47,27 @@ fun HomeScreen() {
                 .fillMaxSize(),
         ) {
             val viewModel: ProxyViewModel = viewModel()
-            val current by viewModel.currentProxy.collectAsState(Proxy.EMPTY_PROXY)
-            val proxyList by viewModel.proxyList.collectAsState(emptyList())
+            val uiState by viewModel.uiState.collectAsState()
+            val isActivated = uiState.isActivated
+            val current = uiState.currentProxy
+            val proxyList = uiState.proxyList
+
+            fun switchActivation(proxy: Proxy) {
+                if (proxy == current && isActivated) {
+                    viewModel.deactivateProxy()
+                } else {
+                    viewModel.setCurrentProxy(proxy, true)
+                }
+            }
 
             Column {
-                StatusCard(current)
+                StatusCard(current, isActivated) {
+                    switchActivation(current)
+                }
                 LazyColumn() {
                     items(proxyList) {
-                        val isActivated = it == current
-                        ProxyCard(it, isActivated) {
-                            if (isActivated) {
-                                viewModel.deactivateProxy()
-                            } else {
-                                viewModel.activateProxy(it)
-                            }
-
+                        ProxyCard(it, it == current) {
+                            switchActivation(it)
                         }
                     }
                     item {
@@ -71,9 +78,7 @@ fun HomeScreen() {
                 }
             }
 
-            val requestPermission by viewModel.requestPermission.collectAsState(false)
-
-            if (requestPermission) {
+            if (uiState.requestingPermission) {
                 RequestPermissionDialog {
                     viewModel.cancelRequestPermission()
                 }
@@ -83,13 +88,13 @@ fun HomeScreen() {
 }
 
 @Composable
-fun ProxyCard(proxy: Proxy, isActivated: Boolean, onActive: () -> Unit) {
+fun ProxyCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .height(64.dp),
-        onClick = onActive
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
@@ -139,10 +144,13 @@ fun AddProxy(onAdd: (proxy: Proxy) -> Unit) {
 }
 
 @Composable
-fun StatusCard(proxy: Proxy) {
+fun StatusCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit) {
     val empty = proxy.isEmpty()
-    val colors = if (empty) CardDefaults.cardColors() else
+    val colors = if (isActivated) {
         CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+    } else {
+        CardDefaults.cardColors()
+    }
 
     Card(
         modifier = Modifier
@@ -150,7 +158,7 @@ fun StatusCard(proxy: Proxy) {
             .padding(vertical = 16.dp, horizontal = 8.dp)
             .height(100.dp),
         colors = colors,
-        onClick = { }
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -215,10 +223,12 @@ fun RequestPermissionDialog(onDismissRequest: () -> Unit) {
         onDismissRequest = { },
         title = { Text("Permission required") },
         text = {
-            Text(
-                "Please grant the permission to set proxy use command: \n"
-                        + "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS"
-            )
+            SelectionContainer() {
+                Text(
+                    "Please grant the permission to set proxy use command: \n"
+                            + "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS"
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
