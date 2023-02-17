@@ -5,6 +5,7 @@ package one.yufz.setproxy.ui.home
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,11 +22,14 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Proxy
@@ -68,9 +73,15 @@ fun HomeScreen() {
                 }
                 LazyColumn() {
                     items(proxyList) {
-                        ProxyCard(it, it == current) {
-                            switchActivation(it)
-                        }
+                        ProxyCard(
+                            proxy = it,
+                            isActivated = it == current,
+                            onClick = {
+                                switchActivation(it)
+                            }, onDelete = {
+                                viewModel.removeProxy(it)
+                            }
+                        )
                     }
                     item {
                         AddProxy {
@@ -90,14 +101,29 @@ fun HomeScreen() {
 }
 
 @Composable
-fun ProxyCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit) {
+fun ProxyCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit) {
+    var showPopupMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .height(64.dp),
-        onClick = onClick
+            .height(64.dp)
+            .clip(CardDefaults.shape)
+            .combinedClickable(onClick = onClick, onLongClick = { showPopupMenu = true }),
     ) {
+        if (showPopupMenu) {
+            DropdownMenu(expanded = true, onDismissRequest = { showPopupMenu = false }) {
+                DropdownMenuItem(
+                    text = {
+                        Text(text = "Delete")
+                    }, onClick = {
+                        onDelete()
+                        showPopupMenu = false
+                    }
+                )
+            }
+        }
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -113,7 +139,9 @@ fun ProxyCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit) {
                 Icon(imageVector = Icons.Filled.Check, contentDescription = "activated")
             }
         }
+
     }
+
 }
 
 @Composable
