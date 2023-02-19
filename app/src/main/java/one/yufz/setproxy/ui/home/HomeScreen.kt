@@ -2,8 +2,6 @@
 
 package one.yufz.setproxy.ui.home
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -26,13 +24,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Proxy
@@ -75,7 +75,8 @@ fun HomeScreen() {
                     items(proxyList) {
                         ProxyCard(
                             proxy = it,
-                            isActivated = it == current,
+                            isChecked = it == current,
+                            isActivated = it == current && isActivated,
                             onClick = {
                                 switchActivation(it)
                             }, onDelete = {
@@ -101,7 +102,7 @@ fun HomeScreen() {
 }
 
 @Composable
-fun ProxyCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit) {
+fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit) {
     var showPopupMenu by remember { mutableStateOf(false) }
 
     Card(
@@ -124,22 +125,26 @@ fun ProxyCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit, onDelete:
                 )
             }
         }
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "${proxy.host}:${proxy.port}",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            )
-            if (isActivated) {
-                Icon(imageVector = Icons.Filled.Check, contentDescription = "activated")
+        CompositionLocalProvider(LocalContentColor provides if (isActivated) MaterialTheme.colorScheme.primary else LocalContentColor.current) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${proxy.host}:${proxy.port}",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+                if (isChecked) {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = "activated",
+                    )
+                }
             }
         }
-
     }
 
 }
