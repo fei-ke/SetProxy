@@ -2,6 +2,7 @@
 
 package one.yufz.setproxy.ui.home
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Proxy
@@ -168,14 +170,24 @@ fun AddProxy(onAdd: (proxy: Proxy) -> Unit) {
         }
     }
     if (showAddDialog) {
+        val context = LocalContext.current
         AddProxyDialog(onDismissRequest = { showAddDialog = false },
             onConfirm = { text ->
-                showAddDialog = false
-                val (host, port) = text.split(":")
-                onAdd(Proxy(host, port.toInt()))
+                if (checkProxyFormat(text)) {
+                    showAddDialog = false
+                    val (host, port) = text.split(":")
+                    onAdd(Proxy(host, port.toInt()))
+                }else{
+                    Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
+                }
             }
         )
     }
+}
+
+fun checkProxyFormat(text: String): Boolean {
+    val regex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|([\\w.-]+):(\\d+)\$".toRegex()
+    return regex.matches(text)
 }
 
 @Composable
