@@ -22,7 +22,7 @@ object DeviceProxyManager {
         awaitClose { unregisterContentObserver(context, observer) }
     }
 
-    private fun getCurrentProxy(context: Context): Proxy {
+    fun getCurrentProxy(context: Context): Proxy {
         val httpProxy = Settings.Global.getString(context.contentResolver, Settings.Global.HTTP_PROXY)
         return if (httpProxy == null) {
             Proxy.EMPTY_PROXY

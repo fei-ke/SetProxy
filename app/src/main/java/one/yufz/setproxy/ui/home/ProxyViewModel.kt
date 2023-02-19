@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import one.yufz.setproxy.DeviceProxyManager
 import one.yufz.setproxy.Proxy
 import one.yufz.setproxy.ProxyStore
@@ -25,11 +26,16 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     private val currentUiState: HomeUiState get() = _uiState.value
 
     init {
-        combine(DeviceProxyManager.getCurrentProxyFlow(app), proxyStore.currentProxyFlow(), proxyStore.listFlow()) { currentActivated, current, proxyList ->
-            val isActivated = !currentActivated.isEmpty()
-            if (isActivated && current != currentActivated) {
-                proxyStore.setCurrentProxy(currentActivated)
+        // Device proxy may be changed outside of this app
+        // So we update the current proxy on every change
+        DeviceProxyManager.getCurrentProxyFlow(app).onEach {
+            if (!it.isEmpty()) {
+                proxyStore.setCurrentProxy(it)
             }
+        }.launchIn(viewModelScope)
+
+        combine(DeviceProxyManager.getCurrentProxyFlow(app), proxyStore.currentProxyFlow(), proxyStore.listFlow()) { currentActivated, current, proxyList ->
+            val isActivated = current == currentActivated && !currentActivated.isEmpty()
             updateUiState(currentUiState.copy(currentProxy = current, isActivated = isActivated, proxyList = proxyList))
         }.launchIn(viewModelScope)
     }
@@ -43,12 +49,15 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     fun removeProxy(proxy: Proxy) {
+        if (DeviceProxyManager.getCurrentProxy(app) == proxy) {
+            deactivateProxy()
+        }
         proxyStore.removeProxy(proxy)
     }
 
     fun setCurrentProxy(proxy: Proxy, active: Boolean) {
         proxyStore.setCurrentProxy(proxy)
-        if (checkPermission()) {
+        if (active && checkPermission()) {
             DeviceProxyManager.setProxy(app, proxy)
         }
     }

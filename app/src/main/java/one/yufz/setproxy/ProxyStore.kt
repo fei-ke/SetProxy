@@ -23,12 +23,19 @@ class ProxyStore(private val context: Context) {
     private val currentProxy = MutableStateFlow(getCurrentProxy())
 
     fun addProxy(proxy: Proxy) {
-        proxyList = proxyList + proxy
-        storeProxyList()
+        if (!proxy.isEmpty()) {
+            proxyList = proxyList + proxy
+            storeProxyList()
+        }
     }
 
     fun removeProxy(proxy: Proxy) {
         proxyList = proxyList - proxy
+
+        if (proxy == currentProxy.value) {
+            setCurrentProxy(EMPTY_PROXY)
+        }
+
         storeProxyList()
     }
 
@@ -60,6 +67,10 @@ class ProxyStore(private val context: Context) {
     }
 
     fun setCurrentProxy(proxy: Proxy) {
+        if (proxy == currentProxy.value) {
+            return
+        }
+
         prefs.edit {
             putString(KEY_CURRENT_PROXY, proxy.toJson().toString())
         }
