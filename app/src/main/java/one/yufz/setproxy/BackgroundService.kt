@@ -20,9 +20,24 @@ class BackgroundService : Service() {
         private const val NOTIFICATION_ID = 123
         private const val NOTIFICATION_CHANNEL = "status"
 
+        private const val ACTION_PAUSE = "one.yufz.setproxy.pause"
+        private const val ACTION_STOP = "one.yufz.setproxy.stop"
+
         fun wakeService(context: Context) {
             val intent = Intent(context, BackgroundService::class.java)
             context.startService(intent)
+        }
+
+        fun createPauseIntent(context: Context): Intent {
+            return Intent(context, BackgroundService::class.java).apply {
+                action = ACTION_PAUSE
+            }
+        }
+
+        fun createStopIntent(context: Context): Intent {
+            return Intent(context, BackgroundService::class.java).apply {
+                action = ACTION_STOP
+            }
         }
     }
 
@@ -40,6 +55,25 @@ class BackgroundService : Service() {
                 cancelNotification(this)
             }
         }.launchIn(mainScope)
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        val action = intent.action
+        if (action != null) {
+            handleAction(action)
+        }
+        return START_STICKY
+    }
+
+    private fun handleAction(action: String) {
+        when (action) {
+            ACTION_PAUSE -> {
+                DeviceProxyManager.setProxy(this, Proxy.EMPTY_PROXY)
+            }
+            ACTION_STOP -> {
+                DeviceProxyManager.setProxy(this, Proxy.EMPTY_PROXY)
+            }
+        }
     }
 
     private fun showNotification(context: Context, proxy: Proxy) {
@@ -67,6 +101,11 @@ class BackgroundService : Service() {
             .setContentIntent(contentIntent)
             .setSmallIcon(R.drawable.ic_outline_lan)
             .setOngoing(true)
+            .addAction(
+                R.drawable.ic_pause,
+                getString(R.string.notification_stop),
+                PendingIntent.getService(context, 0, createPauseIntent(this), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            )
             .build()
 
         nm.notify(NOTIFICATION_ID, notification)

@@ -14,5 +14,7 @@
 
     <string name="notification_channel_status">Status</string>
     <string name="notification_title">Current Proxy</string>
+    <string name="notification_pause">Pause</string>
+    <string name="notification_stop">Stop</string>
 
 </resources>

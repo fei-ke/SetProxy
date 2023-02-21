@@ -14,5 +14,7 @@
 
     <string name="notification_channel_status">状态</string>
     <string name="notification_title">当前代理</string>
+    <string name="notification_pause">暂停</string>
+    <string name="notification_stop">停止</string>
 
 </resources>
