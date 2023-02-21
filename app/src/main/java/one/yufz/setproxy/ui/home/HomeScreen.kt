@@ -41,11 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Proxy
+import one.yufz.setproxy.R
 
 @Composable
 fun HomeScreen() {
@@ -213,7 +214,7 @@ fun StatusCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit) {
         ) {
             if (empty) {
                 Text(
-                    text = "No Proxy Set",
+                    text = stringResource(R.string.proxy_not_set),
                     style = MaterialTheme.typography.displaySmall,
                 )
             } else {
@@ -233,12 +234,12 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = "Add Proxy") },
+        title = { Text(text = stringResource(R.string.add_proxy)) },
         text = {
             OutlinedTextField(
                 value = textFieldValue.value,
                 singleLine = true,
-                placeholder = { Text(text = "host:port") },
+                placeholder = { Text(text = stringResource(R.string.add_proxy_input_hint)) },
                 onValueChange = { textFieldValue.value = it },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -249,7 +250,7 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
                     onConfirm(textFieldValue.value)
                 }
             ) {
-                Text(text = "Add")
+                Text(text = stringResource(R.string.add_proxy_dialog_ok))
             }
         },
         dismissButton = {
@@ -258,7 +259,7 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
                     onDismissRequest()
                 }
             ) {
-                Text(text = "Cancel")
+                Text(text = stringResource(R.string.add_proxy_dialog_button_cancel))
             }
         },
     )
@@ -268,18 +269,17 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
 fun RequestPermissionDialog(onDismissRequest: () -> Unit) {
     AlertDialog(
         onDismissRequest = { },
-        title = { Text("Permission required") },
+        title = { Text(stringResource(R.string.permission_dialog_title)) },
         text = {
             SelectionContainer() {
                 Text(
-                    "Please grant the permission to set proxy use command: \n"
-                            + "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS"
+                    stringResource(id = R.string.permission_dialog_content),
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("OK")
+                Text(stringResource(R.string.permission_dialog_ok))
             }
         }
     )

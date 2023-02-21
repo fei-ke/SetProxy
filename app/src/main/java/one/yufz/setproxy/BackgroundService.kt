@@ -52,7 +52,7 @@ class BackgroundService : Service() {
         }
 
         val channel = NotificationChannelCompat.Builder(NOTIFICATION_CHANNEL, NotificationManagerCompat.IMPORTANCE_LOW)
-            .setName("Status")
+            .setName(getString(R.string.notification_channel_status))
             .build()
 
         nm.createNotificationChannel(channel)
@@ -61,7 +61,7 @@ class BackgroundService : Service() {
         val contentIntent = PendingIntent.getActivity(context, 0, mainIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-            .setContentTitle("Current Proxy")
+            .setContentTitle(getString(R.string.notification_title))
             .setContentText("${proxy.host}:${proxy.port}")
             .setAutoCancel(false)
             .setContentIntent(contentIntent)
