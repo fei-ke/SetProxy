@@ -99,7 +99,7 @@ class BackgroundService : Service() {
             .setContentText("${proxy.host}:${proxy.port}")
             .setAutoCancel(false)
             .setContentIntent(contentIntent)
-            .setSmallIcon(R.drawable.ic_outline_lan)
+            .setSmallIcon(R.drawable.notification_icon)
             .setOngoing(true)
             .addAction(
                 R.drawable.ic_pause,
