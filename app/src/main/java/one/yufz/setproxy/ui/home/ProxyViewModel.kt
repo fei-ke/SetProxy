@@ -35,8 +35,7 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
         }.launchIn(viewModelScope)
 
         combine(DeviceProxyManager.getCurrentProxyFlow(app), proxyStore.currentProxyFlow(), proxyStore.listFlow()) { currentActivated, current, proxyList ->
-            val isActivated = current == currentActivated && !currentActivated.isEmpty()
-            updateUiState(currentUiState.copy(currentProxy = current, isActivated = isActivated, proxyList = proxyList))
+            updateUiState(currentUiState.copy(currentProxy = current, isActivated = !currentActivated.isEmpty(), proxyList = proxyList))
         }.launchIn(viewModelScope)
     }
 

@@ -3,6 +3,7 @@
 package one.yufz.setproxy.ui.home
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -141,7 +142,7 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
-                if (isChecked) {
+                AnimatedVisibility(isChecked) {
                     Icon(
                         imageVector = if (isActivated) Icons.Filled.Check else Icons.Outlined.Remove,
                         contentDescription = "checked",
