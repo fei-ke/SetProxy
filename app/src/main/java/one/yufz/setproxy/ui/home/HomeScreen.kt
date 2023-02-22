@@ -122,7 +122,7 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
             DropdownMenu(expanded = true, onDismissRequest = { showPopupMenu = false }) {
                 DropdownMenuItem(
                     text = {
-                        Text(text = "Delete")
+                        Text(text = stringResource(R.string.delete_proxy))
                     }, onClick = {
                         onDelete()
                         showPopupMenu = false

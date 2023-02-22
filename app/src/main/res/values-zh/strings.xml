@@ -8,6 +8,8 @@
     <string name="add_proxy_dialog_ok">确定</string>
     <string name="add_proxy_dialog_button_cancel">取消</string>
 
+    <string name="delete_proxy">删除</string>
+
     <string name="permission_dialog_title">需要权限</string>
     <string name="permission_dialog_content">请先通过 adb 命令获取权限 \nadb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="permission_dialog_ok">确定</string>

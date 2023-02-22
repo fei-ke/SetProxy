@@ -8,6 +8,8 @@
     <string name="add_proxy_dialog_ok">Add</string>
     <string name="add_proxy_dialog_button_cancel">Cancel</string>
 
+    <string name="delete_proxy">Delete</string>
+
     <string name="permission_dialog_title">Permission required</string>
     <string name="permission_dialog_content">Please grant the permission to set proxy use command:\nadb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="permission_dialog_ok">OK</string>
