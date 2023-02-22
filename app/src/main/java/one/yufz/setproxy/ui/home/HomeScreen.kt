@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -142,8 +143,8 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
                 )
                 if (isChecked) {
                     Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = "activated",
+                        imageVector = if (isActivated) Icons.Filled.Check else Icons.Outlined.Remove,
+                        contentDescription = "checked",
                     )
                 }
             }
@@ -178,7 +179,7 @@ fun AddProxy(onAdd: (proxy: Proxy) -> Unit) {
                     showAddDialog = false
                     val (host, port) = text.split(":")
                     onAdd(Proxy(host, port.toInt()))
-                }else{
+                } else {
                     Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
                 }
             }
