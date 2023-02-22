@@ -38,7 +38,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".BackgroundService" />
+        <receiver android:name=".ActionReceiver" />
     </application>
 
 </manifest>

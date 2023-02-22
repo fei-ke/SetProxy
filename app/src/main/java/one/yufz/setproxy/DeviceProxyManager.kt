@@ -35,11 +35,19 @@ object DeviceProxyManager {
     fun setProxy(context: Context, proxy: Proxy) {
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, "${proxy.host}:${proxy.port}")
 
-        BackgroundService.wakeService(context)
+        NotificationManager.showNotification(context, proxy)
     }
 
     fun removeProxy(context: Context) {
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, ":0")
+        NotificationManager.cancelNotification(context)
+    }
+
+    fun checkStatus(context: Context) {
+        val proxy = getCurrentProxy(context)
+        if (!proxy.isEmpty()) {
+            NotificationManager.showNotification(context, proxy)
+        }
     }
 
     private fun registerContentObserver(context: Context, uri: Uri, observer: ObserverWrap) {
