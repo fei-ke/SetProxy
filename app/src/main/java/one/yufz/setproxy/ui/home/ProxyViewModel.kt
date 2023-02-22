@@ -76,8 +76,9 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
 
         updateUiState(currentUiState.copy(requestingPermission = !granted))
 
-        Log.i("PermissionRequire", "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS")
-
+        if (!granted) {
+            Log.i("PermissionRequire", "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS")
+        }
         return granted
     }
 
