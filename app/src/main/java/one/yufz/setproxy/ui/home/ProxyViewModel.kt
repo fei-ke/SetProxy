@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,8 +14,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import one.yufz.setproxy.DeviceProxyManager
+import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
 import one.yufz.setproxy.ProxyStore
+import one.yufz.setproxy.ShellUtil
 
 class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     private val proxyStore = ProxyStore(app)
@@ -77,12 +80,18 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
         updateUiState(currentUiState.copy(requestingPermission = !granted))
 
         if (!granted) {
-            Log.i("PermissionRequire", "adb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS")
+            Log.i("PermissionRequire", Permission.ADB_COMMAND)
         }
         return granted
     }
 
     fun cancelRequestPermission() {
         updateUiState(currentUiState.copy(requestingPermission = false))
+    }
+
+    fun requestPermissionUseRoot() {
+        ShellUtil.executeCommand(Permission.SU_COMMAND, onSuccess = {}) {
+            Toast.makeText(app, it, Toast.LENGTH_SHORT).show()
+        }
     }
 }

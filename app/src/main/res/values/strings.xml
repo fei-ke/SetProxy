@@ -11,8 +11,10 @@
     <string name="delete_proxy">Delete</string>
 
     <string name="permission_dialog_title">Permission required</string>
-    <string name="permission_dialog_content">Please grant the permission to set proxy use command:\nadb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="permission_dialog_content">Please grant the permission to set proxy use command:\n\n%s\n\nYou can grant permission by root</string>
     <string name="permission_dialog_ok">OK</string>
+    <string name="permission_dialog_copy_command">COPY</string>
+    <string name="permission_dialog_use_root">ROOT</string>
 
     <string name="notification_channel_status">Status</string>
     <string name="notification_title">Current Proxy</string>

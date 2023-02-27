@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,10 +44,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
 import one.yufz.setproxy.R
 
@@ -74,7 +80,9 @@ fun HomeScreen() {
 
             Column {
                 StatusCard(current, isActivated) {
-                    switchActivation(current)
+                    if (!current.isEmpty()) {
+                        switchActivation(current)
+                    }
                 }
                 LazyColumn() {
                     items(proxyList) {
@@ -98,9 +106,14 @@ fun HomeScreen() {
             }
 
             if (uiState.requestingPermission) {
-                RequestPermissionDialog {
-                    viewModel.cancelRequestPermission()
-                }
+                RequestPermissionDialog(
+                    onRoot = {
+                        viewModel.requestPermissionUseRoot()
+                    },
+                    onDismissRequest = {
+                        viewModel.cancelRequestPermission()
+                    }
+                )
             }
         }
     }
@@ -268,21 +281,40 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
 }
 
 @Composable
-fun RequestPermissionDialog(onDismissRequest: () -> Unit) {
+fun RequestPermissionDialog(onRoot: () -> Unit, onDismissRequest: () -> Unit) {
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+
     AlertDialog(
-        onDismissRequest = { },
+        onDismissRequest = onDismissRequest,
         title = { Text(stringResource(R.string.permission_dialog_title)) },
         text = {
             SelectionContainer() {
                 Text(
-                    stringResource(id = R.string.permission_dialog_content),
+                    stringResource(id = R.string.permission_dialog_content, Permission.ADB_COMMAND),
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.permission_dialog_ok))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(onClick = {
+                    onRoot()
+                    onDismissRequest()
+                }) {
+                    Text(stringResource(R.string.permission_dialog_use_root))
+                }
+                Row {
+                    TextButton(onClick = {
+                        clipboardManager.setText(AnnotatedString(Permission.ADB_COMMAND))
+                        onDismissRequest()
+                    }) {
+                        Text(stringResource(R.string.permission_dialog_copy_command))
+                    }
+                    TextButton(onClick = onDismissRequest) {
+                        Text(stringResource(R.string.permission_dialog_ok))
+                    }
+                }
             }
+
         }
     )
 }

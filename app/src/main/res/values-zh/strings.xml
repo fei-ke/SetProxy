@@ -11,8 +11,10 @@
     <string name="delete_proxy">删除</string>
 
     <string name="permission_dialog_title">需要权限</string>
-    <string name="permission_dialog_content">请先通过 adb 命令获取权限 \nadb shell pm grant one.yufz.setproxy android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="permission_dialog_content">请先通过 adb 命令获取权限： \n\n%s\n\n你也可以通过 root 获取权限</string>
     <string name="permission_dialog_ok">确定</string>
+    <string name="permission_dialog_copy_command">复制命令</string>
+    <string name="permission_dialog_use_root">ROOT</string>
 
     <string name="notification_channel_status">状态</string>
     <string name="notification_title">当前代理</string>
