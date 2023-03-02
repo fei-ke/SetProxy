@@ -32,6 +32,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,12 +50,12 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
 import one.yufz.setproxy.R
+import one.yufz.setproxy.Util
 
 @Composable
 fun HomeScreen() {
@@ -85,21 +86,25 @@ fun HomeScreen() {
                     }
                 }
                 LazyColumn() {
-                    items(proxyList) {
+                    items(proxyList) { item ->
                         ProxyCard(
-                            proxy = it,
-                            isChecked = it == current,
-                            isActivated = it == current && isActivated,
+                            proxy = item,
+                            isChecked = item == current,
+                            isActivated = item == current && isActivated,
                             onClick = {
-                                switchActivation(it)
-                            }, onDelete = {
-                                viewModel.removeProxy(it)
+                                switchActivation(item)
+                            },
+                            onDelete = {
+                                viewModel.removeProxy(item)
+                            },
+                            onEdit = {
+                                viewModel.requestEditProxy(item)
                             }
                         )
                     }
                     item {
-                        AddProxy {
-                            viewModel.addProxy(it)
+                        AddProxyCard {
+                            viewModel.requestAddProxy()
                         }
                     }
                 }
@@ -115,12 +120,35 @@ fun HomeScreen() {
                     }
                 )
             }
+
+            //Add proxy dialog
+            if (uiState.requestAddProxy) {
+                EditProxyDialog(
+                    onDismissRequest = { viewModel.cancelAddProxy() },
+                    dialogTitle = stringResource(id = R.string.add_proxy_dialog_title)
+                ) { proxy ->
+                    viewModel.addProxy(proxy)
+                }
+            }
+
+            //Edit proxy dialog
+            val editProxy = uiState.requestEditProxy
+            if (editProxy != null) {
+                EditProxyDialog(
+                    initProxy = editProxy,
+                    dialogTitle = stringResource(id = R.string.edit_proxy_dialog_title),
+                    onDismissRequest = { viewModel.cancelEditProxy() },
+                ) { proxy ->
+                    viewModel.replaceProxy(editProxy, proxy)
+                }
+            }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit) {
+fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit, onEdit: () -> Unit) {
     var showPopupMenu by remember { mutableStateOf(false) }
 
     Card(
@@ -131,18 +159,6 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
             .clip(CardDefaults.shape)
             .combinedClickable(onClick = onClick, onLongClick = { showPopupMenu = true }),
     ) {
-        if (showPopupMenu) {
-            DropdownMenu(expanded = true, onDismissRequest = { showPopupMenu = false }) {
-                DropdownMenuItem(
-                    text = {
-                        Text(text = stringResource(R.string.delete_proxy))
-                    }, onClick = {
-                        onDelete()
-                        showPopupMenu = false
-                    }
-                )
-            }
-        }
         CompositionLocalProvider(LocalContentColor provides if (isActivated) MaterialTheme.colorScheme.primary else LocalContentColor.current) {
             Row(
                 modifier = Modifier
@@ -163,21 +179,46 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
                 }
             }
         }
+        if (showPopupMenu) {
+            Surface (modifier = Modifier.align(Alignment.End)) {
+                CardPopupMenu({ showPopupMenu = false }, onEdit, onDelete)
+            }
+        }
     }
-
 }
 
 @Composable
-fun AddProxy(onAdd: (proxy: Proxy) -> Unit) {
-    var showAddDialog by remember { mutableStateOf(false) }
+private fun CardPopupMenu(onDismissRequest: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+    DropdownMenu(expanded = true, onDismissRequest) {
+        DropdownMenuItem(
+            text = {
+                Text(text = stringResource(R.string.edit_proxy))
+            },
+            onClick = {
+                onEdit()
+                onDismissRequest()
+            }
+        )
+        DropdownMenuItem(
+            text = {
+                Text(text = stringResource(R.string.delete_proxy))
+            }, onClick = {
+                onDelete()
+                onDismissRequest()
+            }
+        )
+    }
+}
+
+@Composable
+fun AddProxyCard(onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .height(64.dp),
-        onClick = {
-            showAddDialog = true
-        }) {
+        onClick = onClick
+    ) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -185,25 +226,6 @@ fun AddProxy(onAdd: (proxy: Proxy) -> Unit) {
             Icon(imageVector = Icons.Filled.Add, contentDescription = "add")
         }
     }
-    if (showAddDialog) {
-        val context = LocalContext.current
-        AddProxyDialog(onDismissRequest = { showAddDialog = false },
-            onConfirm = { text ->
-                if (checkProxyFormat(text)) {
-                    showAddDialog = false
-                    val (host, port) = text.split(":")
-                    onAdd(Proxy(host, port.toInt()))
-                } else {
-                    Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-    }
-}
-
-fun checkProxyFormat(text: String): Boolean {
-    val regex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|([\\w.-]+):(\\d+)\$".toRegex()
-    return regex.matches(text)
 }
 
 @Composable
@@ -244,17 +266,23 @@ fun StatusCard(proxy: Proxy, isActivated: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Unit) {
-    val textFieldValue = remember { mutableStateOf("") }
+fun EditProxyDialog(
+    initProxy: Proxy? = null,
+    dialogTitle: String,
+    onDismissRequest: () -> Unit,
+    onConfirm: (proxy: Proxy) -> Unit
+) {
+    val textFieldValue = remember { mutableStateOf(initProxy?.asAddress() ?: "") }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = stringResource(R.string.add_proxy)) },
+        title = { Text(text = dialogTitle) },
         text = {
             OutlinedTextField(
                 value = textFieldValue.value,
                 singleLine = true,
-                placeholder = { Text(text = stringResource(R.string.add_proxy_input_hint)) },
+                placeholder = { Text(text = stringResource(R.string.edit_proxy_dialog_input_hint)) },
                 onValueChange = { textFieldValue.value = it },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -262,10 +290,17 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
         confirmButton = {
             TextButton(
                 onClick = {
-                    onConfirm(textFieldValue.value)
+                    val text = textFieldValue.value
+                    if (Util.checkProxyFormat(text)) {
+                        onDismissRequest()
+                        val (host, port) = text.split(":")
+                        onConfirm(Proxy(host, port.toInt()))
+                    } else {
+                        Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
+                    }
                 }
             ) {
-                Text(text = stringResource(R.string.add_proxy_dialog_ok))
+                Text(text = stringResource(R.string.edit_proxy_dialog_ok))
             }
         },
         dismissButton = {
@@ -274,7 +309,7 @@ fun AddProxyDialog(onDismissRequest: () -> Unit, onConfirm: (text: String) -> Un
                     onDismissRequest()
                 }
             ) {
-                Text(text = stringResource(R.string.add_proxy_dialog_button_cancel))
+                Text(text = stringResource(R.string.edit_proxy_dialog_button_cancel))
             }
         },
     )

@@ -43,6 +43,10 @@ data class Proxy(
         return host.isEmpty() || port <= 0
     }
 
+    fun asAddress(): String {
+        return "$host:$port"
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

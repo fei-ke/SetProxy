@@ -3,11 +3,13 @@
 
     <string name="proxy_not_set">无代理</string>
 
-    <string name="add_proxy">新增代理</string>
-    <string name="add_proxy_input_hint">host:port</string>
-    <string name="add_proxy_dialog_ok">确定</string>
-    <string name="add_proxy_dialog_button_cancel">取消</string>
+    <string name="add_proxy_dialog_title">新增代理</string>
+    <string name="edit_proxy_dialog_title">编辑代理</string>
+    <string name="edit_proxy_dialog_input_hint">host:port</string>
+    <string name="edit_proxy_dialog_ok">确定</string>
+    <string name="edit_proxy_dialog_button_cancel">取消</string>
 
+    <string name="edit_proxy">编辑</string>
     <string name="delete_proxy">删除</string>
 
     <string name="permission_dialog_title">需要权限</string>

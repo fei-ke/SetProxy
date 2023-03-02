@@ -57,6 +57,14 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
         proxyStore.removeProxy(proxy)
     }
 
+    fun replaceProxy(oldProxy: Proxy, newProxy: Proxy) {
+        proxyStore.replaceProxy(oldProxy, newProxy)
+
+        if (DeviceProxyManager.getCurrentProxy(app) == oldProxy) {
+            setCurrentProxy(newProxy, true)
+        }
+    }
+
     fun setCurrentProxy(proxy: Proxy, active: Boolean) {
         proxyStore.setCurrentProxy(proxy)
         if (active && checkPermission()) {
@@ -68,6 +76,22 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
         if (checkPermission()) {
             DeviceProxyManager.removeProxy(app)
         }
+    }
+
+    fun requestEditProxy(proxy: Proxy) {
+        updateUiState(currentUiState.copy(requestEditProxy = proxy))
+    }
+
+    fun cancelEditProxy() {
+        updateUiState(currentUiState.copy(requestEditProxy = null))
+    }
+
+    fun requestAddProxy() {
+        updateUiState(currentUiState.copy(requestAddProxy = true))
+    }
+
+    fun cancelAddProxy() {
+        updateUiState(currentUiState.copy(requestAddProxy = false))
     }
 
     private fun checkPermission(): Boolean {

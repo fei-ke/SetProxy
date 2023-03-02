@@ -39,6 +39,16 @@ class ProxyStore(private val context: Context) {
         storeProxyList()
     }
 
+    fun replaceProxy(oldProxy: Proxy, newProxy: Proxy) {
+        proxyList = proxyList - oldProxy + newProxy
+
+        if (oldProxy == currentProxy.value) {
+            setCurrentProxy(newProxy)
+        }
+
+        storeProxyList()
+    }
+
     private fun getProxyList(): List<Proxy> {
         val jsonString = prefs.getString(KEY_PROXY_LIST, "[]")
         val array = JSONArray(jsonString)
