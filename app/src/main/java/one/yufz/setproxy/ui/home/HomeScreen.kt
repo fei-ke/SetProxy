@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -155,22 +158,30 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .height(64.dp)
             .clip(CardDefaults.shape)
             .combinedClickable(onClick = onClick, onLongClick = { showPopupMenu = true }),
     ) {
         CompositionLocalProvider(LocalContentColor provides if (isActivated) MaterialTheme.colorScheme.primary else LocalContentColor.current) {
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 64.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "${proxy.host}:${proxy.port}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    if (proxy.name.isNotBlank()) {
+                        Text(
+                            text = proxy.name,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                    Text(
+                        text = "${proxy.host}:${proxy.port}",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
                 AnimatedVisibility(isChecked) {
                     Icon(
                         imageVector = if (isActivated) Icons.Filled.Check else Icons.Outlined.Remove,
@@ -180,7 +191,7 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
             }
         }
         if (showPopupMenu) {
-            Surface (modifier = Modifier.align(Alignment.End)) {
+            Surface(modifier = Modifier.align(Alignment.End)) {
                 CardPopupMenu({ showPopupMenu = false }, onEdit, onDelete)
             }
         }
@@ -272,6 +283,7 @@ fun EditProxyDialog(
     onDismissRequest: () -> Unit,
     onConfirm: (proxy: Proxy) -> Unit
 ) {
+    val nameFieldValue = remember { mutableStateOf(initProxy?.name ?: "") }
     val textFieldValue = remember { mutableStateOf(initProxy?.asAddress() ?: "") }
     val context = LocalContext.current
 
@@ -279,13 +291,23 @@ fun EditProxyDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(text = dialogTitle) },
         text = {
-            OutlinedTextField(
-                value = textFieldValue.value,
-                singleLine = true,
-                placeholder = { Text(text = stringResource(R.string.edit_proxy_dialog_input_hint)) },
-                onValueChange = { textFieldValue.value = it },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column {
+                OutlinedTextField(
+                    value = nameFieldValue.value,
+                    singleLine = true,
+                    label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_name_hint)) },
+                    onValueChange = { nameFieldValue.value = it },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = textFieldValue.value,
+                    singleLine = true,
+                    label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_address_hint)) },
+                    onValueChange = { textFieldValue.value = it },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         },
         confirmButton = {
             TextButton(
@@ -294,7 +316,7 @@ fun EditProxyDialog(
                     if (Util.checkProxyFormat(text)) {
                         onDismissRequest()
                         val (host, port) = text.split(":")
-                        onConfirm(Proxy(host, port.toInt()))
+                        onConfirm(Proxy(host, port.toInt(), name = nameFieldValue.value))
                     } else {
                         Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
                     }

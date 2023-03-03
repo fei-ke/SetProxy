@@ -40,7 +40,11 @@ class ProxyStore(private val context: Context) {
     }
 
     fun replaceProxy(oldProxy: Proxy, newProxy: Proxy) {
-        proxyList = proxyList - oldProxy + newProxy
+        val index = proxyList.indexOf(oldProxy).takeIf { it >= 0 } ?: return
+
+        proxyList = proxyList.toMutableList().apply {
+            set(index, newProxy)
+        }
 
         if (oldProxy == currentProxy.value) {
             setCurrentProxy(newProxy)
@@ -49,7 +53,7 @@ class ProxyStore(private val context: Context) {
         storeProxyList()
     }
 
-    private fun getProxyList(): List<Proxy> {
+    fun getProxyList(): List<Proxy> {
         val jsonString = prefs.getString(KEY_PROXY_LIST, "[]")
         val array = JSONArray(jsonString)
         val list = ArrayList<Proxy>(array.length())

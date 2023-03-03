@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 object DeviceProxyManager {
+    private var currentProxy: Proxy? = null
+
     fun getCurrentProxyFlow(context: Context): Flow<Proxy> = callbackFlow {
         val onChange: () -> Unit = { trySendBlocking(getCurrentProxy(context)) }
 
@@ -27,18 +29,25 @@ object DeviceProxyManager {
         return if (httpProxy == null) {
             Proxy.EMPTY_PROXY
         } else {
-            val (host, port) = httpProxy.split(":")
-            Proxy(host, port.toIntOrNull() ?: 0)
+            if (currentProxy?.asAddress() == httpProxy) {
+                return currentProxy!!
+            } else {
+                val (host, port) = httpProxy.split(":")
+                Proxy(host, port.toIntOrNull() ?: 0)
+            }
         }
     }
 
     fun setProxy(context: Context, proxy: Proxy) {
+        currentProxy = proxy
+
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, "${proxy.host}:${proxy.port}")
 
         NotificationManager.showNotification(context, proxy)
     }
 
     fun removeProxy(context: Context) {
+        currentProxy = null
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, ":0")
         NotificationManager.cancelNotification(context)
     }
