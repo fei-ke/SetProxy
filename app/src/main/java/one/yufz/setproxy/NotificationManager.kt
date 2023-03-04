@@ -32,7 +32,7 @@ object NotificationManager {
         val contentIntent = PendingIntent.getActivity(context, 0, mainIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-            .setContentTitle(context.getString(R.string.notification_title))
+            .setContentTitle(context.getString(R.string.notification_title) + ": ${proxy.name}")
             .setContentText("${proxy.host}:${proxy.port}")
             .setAutoCancel(false)
             .setContentIntent(contentIntent)

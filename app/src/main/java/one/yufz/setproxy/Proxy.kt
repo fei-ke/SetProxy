@@ -13,6 +13,7 @@ data class Proxy(
     companion object {
         val EMPTY_PROXY = Proxy("", 0)
 
+        private const val PROXY_REGEX = """^(?:(?<username>[^:]+):(?<password>[^@]+)@)?(?<host>[^:]+):(?<port>\d+)$"""
         fun Proxy.toJson(): JSONObject {
             return JSONObject().apply {
                 put("host", host)
@@ -40,13 +41,37 @@ data class Proxy(
                 EMPTY_PROXY
             }
         }
+
+        fun isValidProxy(address: String): Boolean {
+            return PROXY_REGEX.toRegex().matches(address)
+        }
+
+        fun fromAddress(address: String): Proxy {
+            val matchResult = PROXY_REGEX.toRegex().find(address)
+
+            // 判断是否匹配成功
+            if (matchResult != null) {
+                val username = matchResult.groups["username"]?.value
+                val password = matchResult.groups["password"]?.value
+                val host = matchResult.groups["host"]?.value!!
+                val port = matchResult.groups["port"]?.value!!
+
+                return Proxy(host, port.toInt(), username, password)
+            } else {
+                return EMPTY_PROXY
+            }
+        }
+
+        fun Proxy.toAddress(): String {
+            if (username.isNullOrBlank() || password.isNullOrBlank()) {
+                return "$host:$port"
+            } else {
+                return "$username:$password@$host:$port"
+            }
+        }
     }
 
     fun isEmpty(): Boolean {
         return host.isEmpty() || port <= 0
-    }
-
-    fun asAddress(): String {
-        return "$host:$port"
     }
 }

@@ -1,9 +1,10 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 
 package one.yufz.setproxy.ui.home
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -57,8 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
+import one.yufz.setproxy.Proxy.Companion.toAddress
 import one.yufz.setproxy.R
-import one.yufz.setproxy.Util
 
 @Composable
 fun HomeScreen() {
@@ -284,7 +284,7 @@ fun EditProxyDialog(
     onConfirm: (proxy: Proxy) -> Unit
 ) {
     val nameFieldValue = remember { mutableStateOf(initProxy?.name ?: "") }
-    val textFieldValue = remember { mutableStateOf(initProxy?.asAddress() ?: "") }
+    val textFieldValue = remember { mutableStateOf(initProxy?.toAddress() ?: "") }
     val context = LocalContext.current
 
     AlertDialog(
@@ -313,10 +313,9 @@ fun EditProxyDialog(
             TextButton(
                 onClick = {
                     val text = textFieldValue.value
-                    if (Util.checkProxyFormat(text)) {
+                    if (Proxy.isValidProxy(text)) {
                         onDismissRequest()
-                        val (host, port) = text.split(":")
-                        onConfirm(Proxy(host, port.toInt(), name = nameFieldValue.value))
+                        onConfirm(Proxy.fromAddress(text).copy(name = nameFieldValue.value))
                     } else {
                         Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
                     }

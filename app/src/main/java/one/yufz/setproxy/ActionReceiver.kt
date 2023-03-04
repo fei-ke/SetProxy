@@ -18,7 +18,7 @@ class ActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_STOP -> {
-                DeviceProxyManager.removeProxy(context)
+                DeviceProxyManager.deactivateProxy(context)
             }
         }
     }

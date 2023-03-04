@@ -14,8 +14,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import one.yufz.setproxy.DeviceProxyManager
+import one.yufz.setproxy.NotificationManager
 import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
+import one.yufz.setproxy.Proxy.Companion.toAddress
 import one.yufz.setproxy.ProxyStore
 import one.yufz.setproxy.ShellUtil
 
@@ -31,14 +33,22 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     init {
         // Device proxy may be changed outside of this app
         // So we update the current proxy on every change
-        DeviceProxyManager.getCurrentProxyFlow(app).onEach {
-            if (!it.isEmpty()) {
-                proxyStore.setCurrentProxy(it)
+        DeviceProxyManager.getActivatedProxyFlow(app).onEach { activatedAddress ->
+            if (activatedAddress != proxyStore.getCurrentProxy().toAddress()) {
+                val proxy = proxyStore.getProxyList()
+                    .find { it.toAddress() == activatedAddress }
+                    ?: Proxy.fromAddress(activatedAddress)
+
+                if (!proxy.isEmpty()) {
+                    proxyStore.setCurrentProxy(proxy)
+                    NotificationManager.showNotification(app, proxy)
+                }
             }
         }.launchIn(viewModelScope)
 
-        combine(DeviceProxyManager.getCurrentProxyFlow(app), proxyStore.currentProxyFlow(), proxyStore.listFlow()) { currentActivated, current, proxyList ->
-            updateUiState(currentUiState.copy(currentProxy = current, isActivated = !currentActivated.isEmpty(), proxyList = proxyList))
+        combine(DeviceProxyManager.getActivatedProxyFlow(app), proxyStore.currentProxyFlow(), proxyStore.listFlow()) { currentActivated, current, proxyList ->
+            val isActivated = Proxy.isValidProxy(currentActivated)
+            updateUiState(currentUiState.copy(currentProxy = current, isActivated = isActivated, proxyList = proxyList))
         }.launchIn(viewModelScope)
     }
 
@@ -51,7 +61,7 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     fun removeProxy(proxy: Proxy) {
-        if (DeviceProxyManager.getCurrentProxy(app) == proxy) {
+        if (DeviceProxyManager.getActivatedProxy(app) == proxy.toAddress()) {
             deactivateProxy()
         }
         proxyStore.removeProxy(proxy)
@@ -60,7 +70,7 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     fun replaceProxy(oldProxy: Proxy, newProxy: Proxy) {
         proxyStore.replaceProxy(oldProxy, newProxy)
 
-        if (DeviceProxyManager.getCurrentProxy(app) == oldProxy) {
+        if (DeviceProxyManager.getActivatedProxy(app) == oldProxy.toAddress()) {
             setCurrentProxy(newProxy, true)
         }
     }
@@ -68,13 +78,13 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
     fun setCurrentProxy(proxy: Proxy, active: Boolean) {
         proxyStore.setCurrentProxy(proxy)
         if (active && checkPermission()) {
-            DeviceProxyManager.setProxy(app, proxy)
+            DeviceProxyManager.activateProxy(app, proxy)
         }
     }
 
     fun deactivateProxy() {
         if (checkPermission()) {
-            DeviceProxyManager.removeProxy(app)
+            DeviceProxyManager.deactivateProxy(app)
         }
     }
 

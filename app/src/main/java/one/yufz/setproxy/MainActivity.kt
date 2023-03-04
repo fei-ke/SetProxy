@@ -39,22 +39,4 @@ class MainActivity : ComponentActivity() {
             activity.requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 0)
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-        DeviceProxyManager.checkStatus(this)
-    }
-}
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    AppTheme {
-        Greeting("Android")
-    }
 }
