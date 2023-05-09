@@ -5,7 +5,8 @@
 
     <string name="add_proxy_dialog_title">新增代理</string>
     <string name="edit_proxy_dialog_title">编辑代理</string>
-    <string name="edit_proxy_dialog_input_address_hint">host:port</string>
+    <string name="edit_proxy_dialog_input_host_hint">host</string>
+    <string name="edit_proxy_dialog_input_port_hint">port</string>
     <string name="edit_proxy_dialog_ok">确定</string>
     <string name="edit_proxy_dialog_button_cancel">取消</string>
 

@@ -284,7 +284,8 @@ fun EditProxyDialog(
     onConfirm: (proxy: Proxy) -> Unit
 ) {
     val nameFieldValue = remember { mutableStateOf(initProxy?.name ?: "") }
-    val textFieldValue = remember { mutableStateOf(initProxy?.toAddress() ?: "") }
+    val hostFieldValue = remember { mutableStateOf(initProxy?.host ?: "") }
+    val portFieldValue = remember { mutableStateOf(initProxy?.port?.toString() ?: "") }
     val context = LocalContext.current
 
     AlertDialog(
@@ -300,19 +301,29 @@ fun EditProxyDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = textFieldValue.value,
-                    singleLine = true,
-                    label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_address_hint)) },
-                    onValueChange = { textFieldValue.value = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = hostFieldValue.value,
+                        singleLine = true,
+                        label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_host_hint)) },
+                        onValueChange = { hostFieldValue.value = it },
+                        modifier = Modifier.weight(2f)
+                    )
+                    Text(text = ":", modifier = Modifier.padding(8.dp))
+                    OutlinedTextField(
+                        value = portFieldValue.value,
+                        singleLine = true,
+                        label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_port_hint)) },
+                        onValueChange = { portFieldValue.value = it },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    val text = textFieldValue.value
+                    val text = hostFieldValue.value + ":" + portFieldValue.value
                     if (Proxy.isValidProxy(text)) {
                         onDismissRequest()
                         onConfirm(Proxy.fromAddress(text).copy(name = nameFieldValue.value))
