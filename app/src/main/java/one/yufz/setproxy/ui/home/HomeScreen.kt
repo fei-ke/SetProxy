@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,7 +59,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
-import one.yufz.setproxy.Proxy.Companion.toAddress
 import one.yufz.setproxy.R
 
 @Composable
@@ -286,65 +287,100 @@ fun EditProxyDialog(
     val nameFieldValue = remember { mutableStateOf(initProxy?.name ?: "") }
     val hostFieldValue = remember { mutableStateOf(initProxy?.host ?: "") }
     val portFieldValue = remember { mutableStateOf(initProxy?.port?.toString() ?: "") }
+    val userNameFieldValue = remember { mutableStateOf(initProxy?.username ?: "") }
+    val passwordFieldValue = remember { mutableStateOf(initProxy?.password ?: "") }
+    var showAuthenticateOption by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text(text = dialogTitle) },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = nameFieldValue.value,
-                    singleLine = true,
-                    label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_name_hint)) },
-                    onValueChange = { nameFieldValue.value = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+    key(showAuthenticateOption) {
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = { Text(text = dialogTitle) },
+            text = {
+                Column {
                     OutlinedTextField(
-                        value = hostFieldValue.value,
+                        value = nameFieldValue.value,
                         singleLine = true,
-                        label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_host_hint)) },
-                        onValueChange = { hostFieldValue.value = it },
-                        modifier = Modifier.weight(2f)
+                        label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_name_hint)) },
+                        onValueChange = { nameFieldValue.value = it },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Text(text = ":", modifier = Modifier.padding(8.dp))
-                    OutlinedTextField(
-                        value = portFieldValue.value,
-                        singleLine = true,
-                        label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_port_hint)) },
-                        onValueChange = { portFieldValue.value = it },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val text = hostFieldValue.value + ":" + portFieldValue.value
-                    if (Proxy.isValidProxy(text)) {
-                        onDismissRequest()
-                        onConfirm(Proxy.fromAddress(text).copy(name = nameFieldValue.value))
-                    } else {
-                        Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = hostFieldValue.value,
+                            singleLine = true,
+                            label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_host_hint)) },
+                            onValueChange = { hostFieldValue.value = it },
+                            modifier = Modifier.weight(2f)
+                        )
+                        Text(text = ":", modifier = Modifier.padding(8.dp))
+                        OutlinedTextField(
+                            value = portFieldValue.value,
+                            singleLine = true,
+                            label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_port_hint)) },
+                            onValueChange = { portFieldValue.value = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "show auth option", modifier = Modifier.clickable { showAuthenticateOption = !showAuthenticateOption })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AnimatedVisibility(visible = showAuthenticateOption) {
+                        Column {
+
+                            OutlinedTextField(
+                                value = userNameFieldValue.value,
+                                singleLine = true,
+                                label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_username_hint)) },
+                                onValueChange = { userNameFieldValue.value = it },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = passwordFieldValue.value,
+                                singleLine = true,
+                                label = { Text(text = stringResource(R.string.edit_proxy_dialog_input_password_hint)) },
+                                onValueChange = { passwordFieldValue.value = it },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
-            ) {
-                Text(text = stringResource(R.string.edit_proxy_dialog_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val text = hostFieldValue.value + ":" + portFieldValue.value
+                        if (Proxy.isValidProxy(text)) {
+                            onDismissRequest()
+                            onConfirm(
+                                Proxy.fromAddress(text).copy(
+                                    name = nameFieldValue.value,
+                                    username = userNameFieldValue.value,
+                                    password = passwordFieldValue.value
+                                )
+                            )
+                        } else {
+                            Toast.makeText(context, "Invalid proxy format", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(R.string.edit_proxy_dialog_ok))
                 }
-            ) {
-                Text(text = stringResource(R.string.edit_proxy_dialog_button_cancel))
-            }
-        },
-    )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.edit_proxy_dialog_button_cancel))
+                }
+            },
+        )
+    }
 }
 
 @Composable

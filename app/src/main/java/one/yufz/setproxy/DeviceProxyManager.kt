@@ -7,10 +7,11 @@ import android.provider.Settings
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 
 object DeviceProxyManager {
+    private const val GLOBAL_HTTP_PROXY_USERNAME = "global_http_proxy_username"
+    private const val GLOBAL_HTTP_PROXY_PASSWORD = "global_http_proxy_password"
     fun getActivatedProxyFlow(context: Context): Flow<String> = callbackFlow {
         val onChange: () -> Unit = { trySendBlocking(getActivatedProxy(context)) }
 
@@ -29,11 +30,17 @@ object DeviceProxyManager {
 
     fun activateProxy(context: Context, proxy: Proxy) {
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, "${proxy.host}:${proxy.port}")
+        if (!proxy.username.isNullOrBlank() && !proxy.password.isNullOrBlank()) {
+            Settings.Global.putString(context.contentResolver, GLOBAL_HTTP_PROXY_USERNAME, proxy.username)
+            Settings.Global.putString(context.contentResolver, GLOBAL_HTTP_PROXY_PASSWORD, proxy.password)
+        }
         NotificationManager.showNotification(context, proxy)
     }
 
     fun deactivateProxy(context: Context) {
         Settings.Global.putString(context.contentResolver, Settings.Global.HTTP_PROXY, ":0")
+        Settings.Global.putString(context.contentResolver, GLOBAL_HTTP_PROXY_USERNAME, "")
+        Settings.Global.putString(context.contentResolver, GLOBAL_HTTP_PROXY_PASSWORD, "")
         NotificationManager.cancelNotification(context)
     }
 

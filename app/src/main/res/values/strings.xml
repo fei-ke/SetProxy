@@ -8,6 +8,8 @@
     <string name="edit_proxy_dialog_input_host_hint">host</string>
     <string name="edit_proxy_dialog_input_port_hint">port</string>
     <string name="edit_proxy_dialog_input_name_hint">proxy name</string>
+    <string name="edit_proxy_dialog_input_username_hint">username</string>
+    <string name="edit_proxy_dialog_input_password_hint">password</string>
     <string name="edit_proxy_dialog_ok">Add</string>
     <string name="edit_proxy_dialog_button_cancel">Cancel</string>
 

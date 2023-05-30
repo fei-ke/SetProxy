@@ -7,6 +7,8 @@
     <string name="edit_proxy_dialog_title">编辑代理</string>
     <string name="edit_proxy_dialog_input_host_hint">host</string>
     <string name="edit_proxy_dialog_input_port_hint">port</string>
+    <string name="edit_proxy_dialog_input_username_hint">用户名</string>
+    <string name="edit_proxy_dialog_input_password_hint">密码</string>
     <string name="edit_proxy_dialog_ok">确定</string>
     <string name="edit_proxy_dialog_button_cancel">取消</string>
 
