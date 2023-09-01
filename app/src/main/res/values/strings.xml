@@ -12,6 +12,7 @@
     <string name="edit_proxy_dialog_button_cancel">Cancel</string>
 
     <string name="edit_proxy">Edit</string>
+    <string name="copy_proxy">Copy</string>
     <string name="delete_proxy">Delete</string>
 
     <string name="permission_dialog_title">Permission required</string>

@@ -11,6 +11,7 @@
     <string name="edit_proxy_dialog_button_cancel">取消</string>
 
     <string name="edit_proxy">编辑</string>
+    <string name="copy_proxy">复制</string>
     <string name="delete_proxy">删除</string>
 
     <string name="permission_dialog_title">需要权限</string>

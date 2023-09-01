@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.yufz.setproxy.Permission
 import one.yufz.setproxy.Proxy
-import one.yufz.setproxy.Proxy.Companion.toAddress
 import one.yufz.setproxy.R
 
 @Composable
@@ -102,6 +101,9 @@ fun HomeScreen() {
                             },
                             onEdit = {
                                 viewModel.requestEditProxy(item)
+                            },
+                            onCopy = {
+                                viewModel.copyProxy(item)
                             }
                         )
                     }
@@ -151,7 +153,7 @@ fun HomeScreen() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit, onEdit: () -> Unit) {
+fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: () -> Unit, onDelete: () -> Unit, onEdit: () -> Unit, onCopy: () -> Unit) {
     var showPopupMenu by remember { mutableStateOf(false) }
 
     Card(
@@ -192,14 +194,14 @@ fun ProxyCard(proxy: Proxy, isChecked: Boolean, isActivated: Boolean, onClick: (
         }
         if (showPopupMenu) {
             Surface(modifier = Modifier.align(Alignment.End)) {
-                CardPopupMenu({ showPopupMenu = false }, onEdit, onDelete)
+                CardPopupMenu({ showPopupMenu = false }, onEdit, onDelete, onCopy)
             }
         }
     }
 }
 
 @Composable
-private fun CardPopupMenu(onDismissRequest: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun CardPopupMenu(onDismissRequest: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit, onCopy: () -> Unit) {
     DropdownMenu(expanded = true, onDismissRequest) {
         DropdownMenuItem(
             text = {
@@ -210,6 +212,16 @@ private fun CardPopupMenu(onDismissRequest: () -> Unit, onEdit: () -> Unit, onDe
                 onDismissRequest()
             }
         )
+
+        DropdownMenuItem(
+            text = {
+                Text(text = stringResource(R.string.copy_proxy))
+            }, onClick = {
+                onCopy()
+                onDismissRequest()
+            }
+        )
+
         DropdownMenuItem(
             text = {
                 Text(text = stringResource(R.string.delete_proxy))

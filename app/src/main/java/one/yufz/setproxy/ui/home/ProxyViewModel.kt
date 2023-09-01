@@ -82,6 +82,11 @@ class ProxyViewModel(private val app: Application) : AndroidViewModel(app) {
         }
     }
 
+
+    fun copyProxy(proxy: Proxy) {
+        addProxy(proxy.copy(name = "Copy of " + proxy.name))
+    }
+
     fun deactivateProxy() {
         if (checkPermission()) {
             DeviceProxyManager.deactivateProxy(app)
