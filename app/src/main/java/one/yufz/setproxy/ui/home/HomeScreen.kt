@@ -224,7 +224,7 @@ private fun CardPopupMenu(onDismissRequest: () -> Unit, onEdit: () -> Unit, onDe
 
         DropdownMenuItem(
             text = {
-                Text(text = stringResource(R.string.delete_proxy))
+                Text(text = stringResource(R.string.delete_proxy), color = MaterialTheme.colorScheme.error)
             }, onClick = {
                 onDelete()
                 onDismissRequest()
